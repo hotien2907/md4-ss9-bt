@@ -43,6 +43,40 @@ public class UserServiceMPL implements IUserService{
             printSQLException(e);
         }
     }
+
+
+    // Thêm phương thức addUserTransaction()
+    public void addUserTransaction(User user, User anotherUser) {
+        Connection connection = null;
+        try {
+            connection = getConnection();
+            connection.setAutoCommit(false);
+
+            insertUserWithPreparedStatement(connection, user);
+
+            // Gây ra lỗi SQL để kiểm tra transaction
+            insertUserWithPreparedStatement(connection, anotherUser);
+
+            connection.commit();
+        } catch (SQLException e) {
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     public User selectUser(int id){
         User user = null;
         try(Connection connection = getConnection();
